@@ -160,7 +160,7 @@ export default function UploadPage() {
             disabled={useDynamic}
             value={selectedSlot}
             onChange={(e) => setSelectedSlot(e.target.value)}
-            className="block w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+            className="block w-full px-4 py-2 border border-gray-300 rounded"
           >
             {[...Array(15)].map((_, i) => (
               <option key={i} value={`quiz${i + 1}`}>
@@ -188,7 +188,7 @@ export default function UploadPage() {
               disabled={noTimer}
               placeholder="Time in minutes"
               min="1"
-              className="mt-2 block w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+              className="mt-2 block w-full px-4 py-2 border border-gray-300 rounded"
             />
           </div>
         )}
@@ -197,7 +197,7 @@ export default function UploadPage() {
           type="file"
           accept=".xlsx"
           onChange={handleFile}
-          className="mb-4 block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:border-0 file:rounded file:bg-blue-600 file:text-white hover:file:bg-blue-700"
+          className="mb-4 block w-full text-sm file:mr-4 file:py-2 file:px-4 file:border-0 file:rounded file:bg-blue-600 file:text-white hover:file:bg-blue-700"
         />
 
         {link && (
@@ -222,7 +222,6 @@ export default function UploadPage() {
         <hr className="my-8" />
         <h2 className="text-xl font-bold mb-4">Manage Static Slots</h2>
 
-        {/* VISIBILI */}
         <div className="mb-6">
           <p className="font-semibold mb-2">Select visible slots for /quizzes page:</p>
           <div className="flex gap-2 mb-2">
@@ -230,8 +229,7 @@ export default function UploadPage() {
               onClick={() => {
                 const all = [...Array(15)].map((_, i) => `quiz${i + 1}`);
                 const allSelected = all.every((slot) => visibleSlots.includes(slot));
-                const updated = allSelected ? [] : all;
-                setVisibleSlots(updated);
+                setVisibleSlots(allSelected ? [] : all);
               }}
               className="bg-gray-300 px-3 py-1 rounded hover:bg-gray-400 text-sm"
             >
@@ -251,7 +249,7 @@ export default function UploadPage() {
                   const { error } = await supabase.from("quiz_visibility").upsert(inserts);
                   if (error) {
                     console.error("Supabase upsert error:", error);
-                    alert("❌ Errore nel salvataggio su Supabase"+ error.message);
+                    alert("❌ Errore nel salvataggio su Supabase: " + error.message);
                   } else {
                     alert("✅ Visibilità salvata correttamente");
                   }
@@ -282,7 +280,6 @@ export default function UploadPage() {
           </div>
         </div>
 
-        {/* DELETE MULTIPLO */}
         <div className="mb-6">
           <p className="font-semibold mb-2">Delete selected slots from Supabase:</p>
           <div className="flex gap-2 mb-2">
@@ -290,8 +287,7 @@ export default function UploadPage() {
               onClick={() => {
                 const all = [...Array(15)].map((_, i) => `quiz${i + 1}`);
                 const allSelected = all.every((slot) => selectedForDelete.includes(slot));
-                const updated = allSelected ? [] : all;
-                setSelectedForDelete(updated);
+                setSelectedForDelete(allSelected ? [] : all);
               }}
               className="bg-gray-300 px-3 py-1 rounded hover:bg-gray-400 text-sm"
             >
@@ -333,7 +329,6 @@ export default function UploadPage() {
           </div>
         </div>
 
-        {/* LINK QR PAGE */}
         <div className="mt-10 text-center">
           <a
             href="/qr"
