@@ -8,7 +8,7 @@ export default function App({ Component, pageProps }: AppProps) {
     <>
       <Head>
         <link rel="icon" type="image/png" href="/favicon.png" />
-        <title>HR Ascend Press</title>
+        <title>ELITE METHOD</title>
       </Head>
       <Component {...pageProps} />
     </>
