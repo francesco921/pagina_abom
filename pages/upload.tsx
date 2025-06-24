@@ -40,12 +40,13 @@ export default function UploadPage() {
     fetchVisibility();
   }, []);
 
-  const toggleSlotVisibility = (slot: string) => {
+  // 🔧 Posizionato correttamente prima del JSX
+  function toggleSlotVisibility(slot: string) {
     const updated = visibleSlots.includes(slot)
       ? visibleSlots.filter((s) => s !== slot)
       : [...visibleSlots, slot];
     setVisibleSlots(updated);
-  };
+  }
 
   const handleLogin = () => {
     if (password.trim() === PASSWORD) {
