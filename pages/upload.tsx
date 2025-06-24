@@ -15,23 +15,19 @@ const PASSWORD = "Filippino1";
 export default function UploadPage() {
   const [access, setAccess] = useState(false);
   const [password, setPassword] = useState("");
+
   const [link, setLink] = useState("");
   const [quizUrl, setQuizUrl] = useState("");
   const [error, setError] = useState("");
+
   const [useDynamic, setUseDynamic] = useState(true);
   const [selectedSlot, setSelectedSlot] = useState("quiz1");
+
   const [noTimer, setNoTimer] = useState(true);
   const [timerValue, setTimerValue] = useState("");
+
   const [visibleSlots, setVisibleSlots] = useState<string[]>([]);
   const [selectedForDelete, setSelectedForDelete] = useState<string[]>([]);
-
-  const toggleSlotVisibility = (slot: string) => {
-    setVisibleSlots((prev) =>
-      prev.includes(slot)
-        ? prev.filter((s) => s !== slot)
-        : [...prev, slot]
-    );
-  };
 
   useEffect(() => {
     const fetchVisibility = async () => {
@@ -44,9 +40,19 @@ export default function UploadPage() {
     fetchVisibility();
   }, []);
 
+  const toggleSlotVisibility = (slot: string) => {
+    const updated = visibleSlots.includes(slot)
+      ? visibleSlots.filter((s) => s !== slot)
+      : [...visibleSlots, slot];
+    setVisibleSlots(updated);
+  };
+
   const handleLogin = () => {
-    if (password.trim() === PASSWORD) setAccess(true);
-    else alert("Incorrect password");
+    if (password.trim() === PASSWORD) {
+      setAccess(true);
+    } else {
+      alert("Incorrect password");
+    }
   };
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -111,7 +117,7 @@ export default function UploadPage() {
 
   if (!access) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4 py-10 bg-gray-50">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-10">
         <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-sm">
           <h1 className="text-xl font-bold mb-4">Protected Access</h1>
           <input
@@ -154,7 +160,7 @@ export default function UploadPage() {
             disabled={useDynamic}
             value={selectedSlot}
             onChange={(e) => setSelectedSlot(e.target.value)}
-            className="block w-full px-4 py-2 border border-gray-300 rounded"
+            className="block w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
           >
             {[...Array(15)].map((_, i) => (
               <option key={i} value={`quiz${i + 1}`}>
@@ -182,7 +188,7 @@ export default function UploadPage() {
               disabled={noTimer}
               placeholder="Time in minutes"
               min="1"
-              className="mt-2 block w-full px-4 py-2 border border-gray-300 rounded"
+              className="mt-2 block w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
             />
           </div>
         )}
@@ -191,7 +197,7 @@ export default function UploadPage() {
           type="file"
           accept=".xlsx"
           onChange={handleFile}
-          className="mb-4 block w-full text-sm file:mr-4 file:py-2 file:px-4 file:border-0 file:rounded file:bg-blue-600 file:text-white hover:file:bg-blue-700"
+          className="mb-4 block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:border-0 file:rounded file:bg-blue-600 file:text-white hover:file:bg-blue-700"
         />
 
         {link && (
@@ -216,8 +222,49 @@ export default function UploadPage() {
         <hr className="my-8" />
         <h2 className="text-xl font-bold mb-4">Manage Static Slots</h2>
 
+        {/* VISIBILI */}
         <div className="mb-6">
           <p className="font-semibold mb-2">Select visible slots for /quizzes page:</p>
+          <div className="flex gap-2 mb-2">
+            <button
+              onClick={() => {
+                const all = [...Array(15)].map((_, i) => `quiz${i + 1}`);
+                const allSelected = all.every((slot) => visibleSlots.includes(slot));
+                const updated = allSelected ? [] : all;
+                setVisibleSlots(updated);
+              }}
+              className="bg-gray-300 px-3 py-1 rounded hover:bg-gray-400 text-sm"
+            >
+              Select All
+            </button>
+            <button
+              onClick={async () => {
+                try {
+                  await supabase.from("quiz_visibility").delete().neq("slot_id", "");
+                  const inserts = [...Array(15)].map((_, i) => {
+                    const slot = `quiz${i + 1}`;
+                    return {
+                      slot_id: slot,
+                      is_visible: visibleSlots.includes(slot),
+                    };
+                  });
+                  const { error } = await supabase.from("quiz_visibility").upsert(inserts);
+                  if (error) {
+                    console.error("Supabase upsert error:", error);
+                    alert("❌ Errore nel salvataggio su Supabase"+ error.message);
+                  } else {
+                    alert("✅ Visibilità salvata correttamente");
+                  }
+                } catch (e) {
+                  console.error(e);
+                  alert("❌ Errore imprevisto");
+                }
+              }}
+              className="bg-blue-600 px-3 py-1 rounded text-white hover:bg-blue-700 text-sm"
+            >
+              Apply
+            </button>
+          </div>
           <div className="grid grid-cols-3 gap-2 text-sm">
             {[...Array(15)].map((_, i) => {
               const slot = `quiz${i + 1}`;
@@ -233,6 +280,67 @@ export default function UploadPage() {
               );
             })}
           </div>
+        </div>
+
+        {/* DELETE MULTIPLO */}
+        <div className="mb-6">
+          <p className="font-semibold mb-2">Delete selected slots from Supabase:</p>
+          <div className="flex gap-2 mb-2">
+            <button
+              onClick={() => {
+                const all = [...Array(15)].map((_, i) => `quiz${i + 1}`);
+                const allSelected = all.every((slot) => selectedForDelete.includes(slot));
+                const updated = allSelected ? [] : all;
+                setSelectedForDelete(updated);
+              }}
+              className="bg-gray-300 px-3 py-1 rounded hover:bg-gray-400 text-sm"
+            >
+              Select All
+            </button>
+            <button
+              onClick={async () => {
+                for (const slot of selectedForDelete) {
+                  await supabase.from("quizzes").delete().eq("id", slot);
+                }
+                alert(`✅ Deleted: ${selectedForDelete.join(", ")}`);
+                setSelectedForDelete([]);
+              }}
+              className="bg-red-600 text-white px-4 py-1 rounded hover:bg-red-700 text-sm"
+            >
+              Delete
+            </button>
+          </div>
+          <div className="grid grid-cols-3 gap-2 text-sm">
+            {[...Array(15)].map((_, i) => {
+              const slot = `quiz${i + 1}`;
+              return (
+                <label key={slot} className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={selectedForDelete.includes(slot)}
+                    onChange={(e) =>
+                      setSelectedForDelete((prev) =>
+                        e.target.checked
+                          ? [...prev, slot]
+                          : prev.filter((s) => s !== slot)
+                      )
+                    }
+                  />
+                  <span>{slot.toUpperCase()}</span>
+                </label>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* LINK QR PAGE */}
+        <div className="mt-10 text-center">
+          <a
+            href="/qr"
+            className="inline-block bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 text-sm"
+          >
+            View QR Codes for Static Slots
+          </a>
         </div>
       </div>
     </div>
