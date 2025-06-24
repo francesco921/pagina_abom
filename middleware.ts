@@ -5,19 +5,19 @@ export function middleware(request: NextRequest) {
   const url = request.nextUrl.clone();
 
   // Gestione solo se è hrascendpress.online
-  if (!host.endsWith("hrascendpress.online")) {
+  if (!host.endsWith("medtestpublishing.com")) {
     return NextResponse.next();
   }
 
   // Ignora dominio root e www
   if (
-    host === "hrascendpress.online" ||
+    host === "medtestpublishing.com" ||
     host === "www.hrascendpress.online"
   ) {
     return NextResponse.next();
   }
 
-  const subdomain = host.replace(".hrascendpress.online", "");
+  const subdomain = host.replace(".medtestpublishing.com", "");
   url.pathname = `/quiz/${subdomain}`;
   return NextResponse.rewrite(url);
 }
