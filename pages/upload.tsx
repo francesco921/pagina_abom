@@ -29,6 +29,13 @@ export default function UploadPage() {
   const [visibleSlots, setVisibleSlots] = useState<string[]>([]);
   const [selectedForDelete, setSelectedForDelete] = useState<string[]>([]);
 
+  const toggleSlotVisibility = (slot: string) => {
+    const updated = visibleSlots.includes(slot)
+      ? visibleSlots.filter((s) => s !== slot)
+      : [...visibleSlots, slot];
+    setVisibleSlots(updated);
+  };
+
   useEffect(() => {
     const fetchVisibility = async () => {
       const { data, error } = await supabase.from("quiz_visibility").select("*");
@@ -39,14 +46,6 @@ export default function UploadPage() {
     };
     fetchVisibility();
   }, []);
-
-  // 🔧 Posizionato correttamente prima del JSX
-  function toggleSlotVisibility(slot: string) {
-    const updated = visibleSlots.includes(slot)
-      ? visibleSlots.filter((s) => s !== slot)
-      : [...visibleSlots, slot];
-    setVisibleSlots(updated);
-  }
 
   const handleLogin = () => {
     if (password.trim() === PASSWORD) {
@@ -240,13 +239,10 @@ export default function UploadPage() {
               onClick={async () => {
                 try {
                   await supabase.from("quiz_visibility").delete().neq("slot_id", "");
-                  const inserts = [...Array(15)].map((_, i) => {
-                    const slot = `quiz${i + 1}`;
-                    return {
-                      slot_id: slot,
-                      is_visible: visibleSlots.includes(slot),
-                    };
-                  });
+                  const inserts = [...Array(15)].map((_, i) => ({
+                    slot_id: `quiz${i + 1}`,
+                    is_visible: visibleSlots.includes(`quiz${i + 1}`),
+                  }));
                   const { error } = await supabase.from("quiz_visibility").upsert(inserts);
                   if (error) {
                     console.error("Supabase upsert error:", error);
