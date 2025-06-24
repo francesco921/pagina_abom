@@ -15,25 +15,22 @@ const PASSWORD = "Filippino1";
 export default function UploadPage() {
   const [access, setAccess] = useState(false);
   const [password, setPassword] = useState("");
-
   const [link, setLink] = useState("");
   const [quizUrl, setQuizUrl] = useState("");
   const [error, setError] = useState("");
-
   const [useDynamic, setUseDynamic] = useState(true);
   const [selectedSlot, setSelectedSlot] = useState("quiz1");
-
   const [noTimer, setNoTimer] = useState(true);
   const [timerValue, setTimerValue] = useState("");
-
   const [visibleSlots, setVisibleSlots] = useState<string[]>([]);
   const [selectedForDelete, setSelectedForDelete] = useState<string[]>([]);
 
   const toggleSlotVisibility = (slot: string) => {
-    const updated = visibleSlots.includes(slot)
-      ? visibleSlots.filter((s) => s !== slot)
-      : [...visibleSlots, slot];
-    setVisibleSlots(updated);
+    setVisibleSlots((prev) =>
+      prev.includes(slot)
+        ? prev.filter((s) => s !== slot)
+        : [...prev, slot]
+    );
   };
 
   useEffect(() => {
@@ -48,11 +45,8 @@ export default function UploadPage() {
   }, []);
 
   const handleLogin = () => {
-    if (password.trim() === PASSWORD) {
-      setAccess(true);
-    } else {
-      alert("Incorrect password");
-    }
+    if (password.trim() === PASSWORD) setAccess(true);
+    else alert("Incorrect password");
   };
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -117,7 +111,7 @@ export default function UploadPage() {
 
   if (!access) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-10">
+      <div className="min-h-screen flex items-center justify-center px-4 py-10 bg-gray-50">
         <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-sm">
           <h1 className="text-xl font-bold mb-4">Protected Access</h1>
           <input
@@ -224,42 +218,6 @@ export default function UploadPage() {
 
         <div className="mb-6">
           <p className="font-semibold mb-2">Select visible slots for /quizzes page:</p>
-          <div className="flex gap-2 mb-2">
-            <button
-              onClick={() => {
-                const all = [...Array(15)].map((_, i) => `quiz${i + 1}`);
-                const allSelected = all.every((slot) => visibleSlots.includes(slot));
-                setVisibleSlots(allSelected ? [] : all);
-              }}
-              className="bg-gray-300 px-3 py-1 rounded hover:bg-gray-400 text-sm"
-            >
-              Select All
-            </button>
-            <button
-              onClick={async () => {
-                try {
-                  await supabase.from("quiz_visibility").delete().neq("slot_id", "");
-                  const inserts = [...Array(15)].map((_, i) => ({
-                    slot_id: `quiz${i + 1}`,
-                    is_visible: visibleSlots.includes(`quiz${i + 1}`),
-                  }));
-                  const { error } = await supabase.from("quiz_visibility").upsert(inserts);
-                  if (error) {
-                    console.error("Supabase upsert error:", error);
-                    alert("❌ Errore nel salvataggio su Supabase: " + error.message);
-                  } else {
-                    alert("✅ Visibilità salvata correttamente");
-                  }
-                } catch (e) {
-                  console.error(e);
-                  alert("❌ Errore imprevisto");
-                }
-              }}
-              className="bg-blue-600 px-3 py-1 rounded text-white hover:bg-blue-700 text-sm"
-            >
-              Apply
-            </button>
-          </div>
           <div className="grid grid-cols-3 gap-2 text-sm">
             {[...Array(15)].map((_, i) => {
               const slot = `quiz${i + 1}`;
@@ -275,64 +233,6 @@ export default function UploadPage() {
               );
             })}
           </div>
-        </div>
-
-        <div className="mb-6">
-          <p className="font-semibold mb-2">Delete selected slots from Supabase:</p>
-          <div className="flex gap-2 mb-2">
-            <button
-              onClick={() => {
-                const all = [...Array(15)].map((_, i) => `quiz${i + 1}`);
-                const allSelected = all.every((slot) => selectedForDelete.includes(slot));
-                setSelectedForDelete(allSelected ? [] : all);
-              }}
-              className="bg-gray-300 px-3 py-1 rounded hover:bg-gray-400 text-sm"
-            >
-              Select All
-            </button>
-            <button
-              onClick={async () => {
-                for (const slot of selectedForDelete) {
-                  await supabase.from("quizzes").delete().eq("id", slot);
-                }
-                alert(`✅ Deleted: ${selectedForDelete.join(", ")}`);
-                setSelectedForDelete([]);
-              }}
-              className="bg-red-600 text-white px-4 py-1 rounded hover:bg-red-700 text-sm"
-            >
-              Delete
-            </button>
-          </div>
-          <div className="grid grid-cols-3 gap-2 text-sm">
-            {[...Array(15)].map((_, i) => {
-              const slot = `quiz${i + 1}`;
-              return (
-                <label key={slot} className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    checked={selectedForDelete.includes(slot)}
-                    onChange={(e) =>
-                      setSelectedForDelete((prev) =>
-                        e.target.checked
-                          ? [...prev, slot]
-                          : prev.filter((s) => s !== slot)
-                      )
-                    }
-                  />
-                  <span>{slot.toUpperCase()}</span>
-                </label>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="mt-10 text-center">
-          <a
-            href="/qr"
-            className="inline-block bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 text-sm"
-          >
-            View QR Codes for Static Slots
-          </a>
         </div>
       </div>
     </div>
