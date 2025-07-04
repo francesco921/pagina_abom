@@ -8,7 +8,7 @@ export default function App({ Component, pageProps }: AppProps) {
     <>
       <Head>
         <link rel="icon" type="image/png" href="/favicon.png" />
-        <title>ELITE METHOD</title>
+        <title>MedTest Publishing</title>
       </Head>
       <Component {...pageProps} />
     </>

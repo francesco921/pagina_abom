@@ -6,7 +6,7 @@ export default function HomePage() {
       <header className="max-w-7xl mx-auto px-6 py-6">
         <div className="flex items-center gap-3">
           <h1 className="text-2xl font-extrabold tracking-wide text-white">
-            MEDTEST EXCELLENCE
+            ABOM Excellence
           </h1>
         </div>
       </header>
